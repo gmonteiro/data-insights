@@ -1,20 +1,27 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import type { UIMessage } from "ai";
 import { Markdown } from "./markdown";
 import { ChartRenderer } from "./chart-renderer";
 import type { ChartData } from "@/types";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function MessageList({ messages }: { messages: UIMessage[] }) {
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
-    <ScrollArea className="flex-1 p-4">
+    <div className="flex-1 overflow-y-auto p-4">
       <div className="mx-auto max-w-3xl space-y-4">
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
         ))}
+        <div ref={bottomRef} />
       </div>
-    </ScrollArea>
+    </div>
   );
 }
 
@@ -22,15 +29,16 @@ function MessageBubble({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
   const parts = message.parts ?? [];
 
-  // Concatenate consecutive text parts
+  // Concatenate consecutive text parts with newline separator
   const textContent = parts
     .filter((p) => p != null && p.type === "text" && "text" in p)
     .map((p) => (p as { type: "text"; text: string }).text)
-    .join("");
+    .join("\n");
 
   // Find chart tool parts — in v6, tool parts have type "tool-<toolName>"
   const chartParts = parts.filter(
-    (p) => p != null && typeof p.type === "string" && p.type.startsWith("tool-")
+    (p) =>
+      p != null && typeof p.type === "string" && p.type.startsWith("tool-")
   );
 
   return (
