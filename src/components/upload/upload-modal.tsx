@@ -13,26 +13,36 @@ import { Textarea } from "@/components/ui/textarea";
 import { CsvDropzone } from "./csv-dropzone";
 import { CsvPreview } from "./csv-preview";
 import { useCsvStore } from "@/lib/csv-store";
-import type { CsvFile } from "@/types";
+import type { CsvUploadPayload } from "@/types";
 
 export function UploadModal() {
   const [open, setOpen] = useState(false);
-  const [lastFile, setLastFile] = useState<CsvFile | null>(null);
+  const [payload, setPayload] = useState<CsvUploadPayload | null>(null);
   const [context, setContext] = useState("");
-  const updateFileContext = useCsvStore((s) => s.updateFileContext);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const uploadFile = useCsvStore((s) => s.uploadFile);
 
-  const handleFileLoaded = (file: CsvFile) => {
-    setLastFile(file);
+  const handleFileLoaded = (p: CsvUploadPayload) => {
+    setPayload(p);
     setContext("");
+    setError(null);
   };
 
-  const handleSaveContext = () => {
-    if (lastFile && context.trim()) {
-      updateFileContext(lastFile.id, context.trim());
+  const handleUpload = async () => {
+    if (!payload) return;
+    setUploading(true);
+    setError(null);
+    try {
+      await uploadFile({ ...payload, context: context.trim() || undefined });
+      setOpen(false);
+      setPayload(null);
+      setContext("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
     }
-    setOpen(false);
-    setLastFile(null);
-    setContext("");
   };
 
   return (
@@ -48,9 +58,15 @@ export function UploadModal() {
         </SheetHeader>
         <div className="mt-4 space-y-4">
           <CsvDropzone onFileLoaded={handleFileLoaded} />
-          {lastFile && (
+          {payload && (
             <>
-              <CsvPreview file={lastFile} />
+              <CsvPreview
+                file={{
+                  headers: payload.headers,
+                  rows: payload.rows,
+                  row_count: payload.rows.length,
+                }}
+              />
               <div>
                 <label className="mb-1 block text-sm font-medium">
                   Describe this data (optional)
@@ -62,8 +78,13 @@ export function UploadModal() {
                   rows={3}
                 />
               </div>
-              <Button onClick={handleSaveContext} className="w-full">
-                Done
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              <Button
+                onClick={handleUpload}
+                className="w-full"
+                disabled={uploading}
+              >
+                {uploading ? "Uploading..." : "Upload"}
               </Button>
             </>
           )}

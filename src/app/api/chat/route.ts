@@ -7,15 +7,43 @@ import {
   type Tool,
 } from "ai";
 import { z } from "zod";
+import { getSupabaseAdmin } from "@/lib/supabase";
 import { formatCsvContext } from "@/lib/format-csv-context";
 import type { CsvFile } from "@/types";
 
-// Allow large request bodies (CSV data)
 export const maxDuration = 60;
+
+const runSqlTool: Tool = {
+  description:
+    "Execute a read-only SQL SELECT query against the CSV data in PostgreSQL. Returns up to 200 rows as JSON. Use this to analyze uploaded CSV data.",
+  inputSchema: z.object({
+    query: z
+      .string()
+      .describe(
+        "A SELECT SQL query. Must be read-only. Use csv_rows table with data->>'field_name' for access."
+      ),
+  }),
+  execute: async ({ query }: { query: string }) => {
+    const trimmed = query.trim().toLowerCase();
+    if (!trimmed.startsWith("select")) {
+      return { error: "Only SELECT queries are allowed." };
+    }
+
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase.rpc("run_readonly_query", {
+      sql_query: query,
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+    return { rows: data, rowCount: Array.isArray(data) ? data.length : 0 };
+  },
+};
 
 const renderChartTool: Tool = {
   description:
-    "Render a chart from data. Use this when the user asks for a visualization.",
+    "Render a chart from data. First query data with run_sql, then pass the results here.",
   inputSchema: z.object({
     rows: z.array(z.record(z.string(), z.any())),
     xAxisKey: z.string().describe("Key for the X axis"),
@@ -33,12 +61,37 @@ const renderChartTool: Tool = {
 };
 
 export async function POST(req: Request) {
-  const { messages, csvData } = (await req.json()) as {
+  const { messages, fileIds } = (await req.json()) as {
     messages: UIMessage[];
-    csvData?: CsvFile[];
+    fileIds?: string[];
   };
 
-  const systemPrompt = formatCsvContext(csvData ?? []);
+  const supabase = getSupabaseAdmin();
+
+  // Fetch file metadata
+  let files: CsvFile[] = [];
+  if (fileIds?.length) {
+    const { data } = await supabase
+      .from("csv_files")
+      .select("id, name, headers, row_count, context")
+      .in("id", fileIds);
+    files = (data as CsvFile[]) ?? [];
+  }
+
+  // Fetch 5 sample rows per file
+  const samples: Record<string, Record<string, string>[]> = {};
+  for (const file of files) {
+    const { data } = await supabase
+      .from("csv_rows")
+      .select("data")
+      .eq("file_id", file.id)
+      .order("row_index")
+      .limit(5);
+    samples[file.id] =
+      data?.map((r: { data: Record<string, string> }) => r.data) ?? [];
+  }
+
+  const systemPrompt = formatCsvContext(files, samples);
   const modelMessages = await convertToModelMessages(messages);
 
   const result = streamText({
@@ -46,9 +99,10 @@ export async function POST(req: Request) {
     system: systemPrompt,
     messages: modelMessages,
     tools: {
+      run_sql: runSqlTool,
       render_chart: renderChartTool,
     },
-    stopWhen: stepCountIs(5),
+    stopWhen: stepCountIs(10),
   });
 
   return result.toUIMessageStreamResponse();

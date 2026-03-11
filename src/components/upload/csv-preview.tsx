@@ -1,6 +1,5 @@
 "use client";
 
-import type { CsvFile } from "@/types";
 import {
   Table,
   TableBody,
@@ -10,7 +9,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export function CsvPreview({ file }: { file: CsvFile }) {
+interface PreviewFile {
+  headers: string[];
+  rows: Record<string, string>[];
+  row_count: number;
+}
+
+export function CsvPreview({ file }: { file: PreviewFile }) {
   const previewRows = file.rows.slice(0, 10);
 
   return (
@@ -37,9 +42,9 @@ export function CsvPreview({ file }: { file: CsvFile }) {
           ))}
         </TableBody>
       </Table>
-      {file.rowCount > 10 && (
+      {file.row_count > 10 && (
         <p className="p-2 text-center text-xs text-gray-400">
-          Showing 10 of {file.rowCount} rows
+          Showing 10 of {file.row_count} rows
         </p>
       )}
     </div>

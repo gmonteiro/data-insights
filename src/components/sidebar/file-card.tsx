@@ -7,7 +7,7 @@ import type { CsvFile } from "@/types";
 import { useCsvStore } from "@/lib/csv-store";
 
 export function FileCard({ file }: { file: CsvFile }) {
-  const removeFile = useCsvStore((s) => s.removeFile);
+  const deleteFile = useCsvStore((s) => s.deleteFile);
 
   return (
     <Card className="p-3">
@@ -16,7 +16,7 @@ export function FileCard({ file }: { file: CsvFile }) {
           <p className="truncate text-sm font-medium">{file.name}</p>
           <div className="mt-1 flex gap-1">
             <Badge variant="secondary" className="text-xs">
-              {file.rowCount} rows
+              {file.row_count} rows
             </Badge>
             <Badge variant="secondary" className="text-xs">
               {file.headers.length} cols
@@ -32,7 +32,7 @@ export function FileCard({ file }: { file: CsvFile }) {
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-          onClick={() => removeFile(file.id)}
+          onClick={() => deleteFile(file.id)}
         >
           x
         </Button>

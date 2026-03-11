@@ -2,15 +2,13 @@
 
 import { useCallback, useState } from "react";
 import { parseCsvFile } from "@/lib/csv-parser";
-import { useCsvStore } from "@/lib/csv-store";
-import type { CsvFile } from "@/types";
+import type { CsvUploadPayload } from "@/types";
 
 interface CsvDropzoneProps {
-  onFileLoaded?: (file: CsvFile) => void;
+  onFileLoaded?: (payload: CsvUploadPayload) => void;
 }
 
 export function CsvDropzone({ onFileLoaded }: CsvDropzoneProps) {
-  const addFile = useCsvStore((s) => s.addFile);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,14 +22,17 @@ export function CsvDropzone({ onFileLoaded }: CsvDropzoneProps) {
         }
         try {
           const parsed = await parseCsvFile(file);
-          addFile(parsed);
-          onFileLoaded?.(parsed);
+          onFileLoaded?.({
+            name: parsed.name,
+            headers: parsed.headers,
+            rows: parsed.rows,
+          });
         } catch {
           setError(`Failed to parse ${file.name}`);
         }
       }
     },
-    [addFile, onFileLoaded]
+    [onFileLoaded]
   );
 
   return (

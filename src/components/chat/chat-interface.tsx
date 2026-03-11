@@ -9,7 +9,7 @@ import { ChatInput } from "./chat-input";
 const transport = new DefaultChatTransport({
   api: "/api/chat",
   body: () => ({
-    csvData: useCsvStore.getState().files,
+    fileIds: useCsvStore.getState().files.map((f) => f.id),
   }),
 });
 
