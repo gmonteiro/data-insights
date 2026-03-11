@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Data Insights",
-  description: "CSV analysis with AI chat and charts",
+  title: "Zona Sul - Data Insights",
+  description: "Análise de dados CSV com IA",
 };
 
 export default function RootLayout({

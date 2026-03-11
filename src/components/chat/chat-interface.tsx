@@ -27,10 +27,12 @@ export function ChatInterface() {
       {messages.length === 0 ? (
         <div className="flex flex-1 items-center justify-center text-gray-400">
           <div className="text-center">
-            <h2 className="mb-2 text-xl font-semibold text-gray-600">
-              Data Insights
-            </h2>
-            <p>Upload a CSV file and ask questions about your data</p>
+            <img
+              src="/zona-sul-logo.svg"
+              alt="Zona Sul"
+              className="mx-auto mb-4 h-12"
+            />
+            <p>Envie um arquivo CSV e pergunte sobre seus dados</p>
           </div>
         </div>
       ) : (

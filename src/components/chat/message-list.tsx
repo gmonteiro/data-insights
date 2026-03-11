@@ -45,7 +45,7 @@ function MessageBubble({ message }: { message: UIMessage }) {
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
         className={`max-w-[85%] rounded-lg px-4 py-2 ${
-          isUser ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"
+          isUser ? "bg-[#ED1C24] text-white" : "bg-gray-100 text-gray-900"
         }`}
       >
         {textContent && <Markdown content={textContent} />}
