@@ -51,14 +51,30 @@ function MessageBubble({ message }: { message: UIMessage }) {
   // Concatenate consecutive text parts with newline separator
   const textContent = parts
     .filter((p) => p != null && p.type === "text" && "text" in p)
-    .map((p) => (p as { type: "text"; text: string }).text)
+    .map((p) => {
+      const text = (p as { type: "text"; text: string }).text;
+      return typeof text === "string" ? text : "";
+    })
+    .filter(Boolean)
     .join("\n");
 
-  // Find chart tool parts — in v6, tool parts have type "tool-<toolName>"
+  // Find chart tool parts — in v6, tool parts have type "tool-render_chart"
   const chartParts = parts.filter(
     (p) =>
-      p != null && typeof p.type === "string" && p.type.startsWith("tool-")
+      p != null &&
+      typeof p.type === "string" &&
+      p.type === "tool-render_chart"
   );
+
+  // Check if model is mid-tool-call (has tool parts but no text yet)
+  const hasToolActivity = parts.some(
+    (p) =>
+      p != null &&
+      typeof p.type === "string" &&
+      p.type.startsWith("tool-") &&
+      p.type !== "tool-render_chart"
+  );
+  const showToolIndicator = !isUser && !textContent && hasToolActivity;
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
@@ -67,6 +83,11 @@ function MessageBubble({ message }: { message: UIMessage }) {
           isUser ? "bg-[#ED1C24] text-white" : "bg-gray-100 text-gray-900"
         }`}
       >
+        {showToolIndicator && (
+          <span className="inline-flex items-center gap-1 text-sm text-gray-500">
+            <span className="animate-pulse">●</span> Consultando dados...
+          </span>
+        )}
         {textContent && <Markdown content={textContent} />}
         {chartParts.map((part, i) => {
           const input = (part as Record<string, unknown>).input as
