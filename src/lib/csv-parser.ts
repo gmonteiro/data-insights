@@ -24,7 +24,7 @@ export function parseCsvFile(file: File): Promise<CsvFile> {
   });
 }
 
-/** Build a summary payload for the LLM. ≤500 rows → full data, otherwise summary. */
+/** Build a summary payload for the LLM. ≤2000 rows → full data, otherwise spread sample. */
 export function summarizeCsv(file: CsvFile): {
   name: string;
   headers: string[];
@@ -33,7 +33,7 @@ export function summarizeCsv(file: CsvFile): {
   rows?: Record<string, string>[];
   sampleRows?: Record<string, string>[];
 } {
-  if (file.rowCount <= 500) {
+  if (file.rowCount <= 2000) {
     return {
       name: file.name,
       headers: file.headers,
@@ -42,11 +42,16 @@ export function summarizeCsv(file: CsvFile): {
       rows: file.rows,
     };
   }
+  // For large files, take samples from beginning, middle, and end
+  const head = file.rows.slice(0, 50);
+  const midStart = Math.floor(file.rowCount / 2) - 25;
+  const middle = file.rows.slice(midStart, midStart + 50);
+  const tail = file.rows.slice(-50);
   return {
     name: file.name,
     headers: file.headers,
     rowCount: file.rowCount,
     context: file.context,
-    sampleRows: file.rows.slice(0, 50),
+    sampleRows: [...head, ...middle, ...tail],
   };
 }
