@@ -10,6 +10,9 @@ import { z } from "zod";
 import { formatCsvContext } from "@/lib/format-csv-context";
 import type { CsvFile } from "@/types";
 
+// Allow large request bodies (CSV data)
+export const maxDuration = 60;
+
 const renderChartTool: Tool = {
   description:
     "Render a chart from data. Use this when the user asks for a visualization.",
@@ -39,7 +42,7 @@ export async function POST(req: Request) {
   const modelMessages = await convertToModelMessages(messages);
 
   const result = streamText({
-    model: anthropic("claude-opus-4-6"),
+    model: anthropic("claude-sonnet-4-6"),
     system: systemPrompt,
     messages: modelMessages,
     tools: {

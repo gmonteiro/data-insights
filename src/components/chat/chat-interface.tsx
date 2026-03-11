@@ -14,7 +14,7 @@ const transport = new DefaultChatTransport({
 });
 
 export function ChatInterface() {
-  const { messages, sendMessage, status } = useChat({ transport });
+  const { messages, sendMessage, status, error } = useChat({ transport });
 
   const isLoading = status === "streaming" || status === "submitted";
 
@@ -35,6 +35,11 @@ export function ChatInterface() {
         </div>
       ) : (
         <MessageList messages={messages} />
+      )}
+      {error && (
+        <div className="mx-auto max-w-3xl px-4 py-2 text-sm text-red-600">
+          Error: {error.message}
+        </div>
       )}
       <ChatInput onSend={handleSend} isLoading={isLoading} />
     </div>
