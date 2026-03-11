@@ -2,9 +2,16 @@ export interface CsvFile {
   id: string;
   name: string;
   headers: string[];
+  row_count: number;
+  context?: string;
+  created_at?: string;
+}
+
+export interface CsvUploadPayload {
+  name: string;
+  headers: string[];
   rows: Record<string, string>[];
-  rowCount: number;
-  context?: string; // user-provided description
+  context?: string;
 }
 
 export interface ChartData {
