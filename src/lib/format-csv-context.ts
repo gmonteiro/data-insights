@@ -1,5 +1,4 @@
 import type { CsvFile } from "@/types";
-import { summarizeCsv } from "./csv-parser";
 
 export function formatCsvContext(files: CsvFile[]): string {
   if (files.length === 0) {
@@ -7,18 +6,12 @@ export function formatCsvContext(files: CsvFile[]): string {
   }
 
   const parts = files.map((file) => {
-    const summary = summarizeCsv(file);
-    const dataSection =
-      summary.rows
-        ? `Full data (${summary.rowCount} rows):\n${JSON.stringify(summary.rows)}`
-        : `Sample (first 50 of ${summary.rowCount} rows):\n${JSON.stringify(summary.sampleRows)}`;
-
     return [
-      `## File: ${summary.name}`,
-      summary.context ? `Description: ${summary.context}` : null,
-      `Headers: ${summary.headers.join(", ")}`,
-      `Row count: ${summary.rowCount}`,
-      dataSection,
+      `## File: ${file.name}`,
+      file.context ? `Description: ${file.context}` : null,
+      `Headers: ${file.headers.join(", ")}`,
+      `Row count: ${file.rowCount}`,
+      `Full data (${file.rowCount} rows):\n${JSON.stringify(file.rows)}`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -26,7 +19,7 @@ export function formatCsvContext(files: CsvFile[]): string {
 
   return [
     "You are a data analyst assistant. The user has uploaded the following CSV files.",
-    "Analyze the data and answer questions. When the user asks for a chart, use the render_chart tool.",
+    "Analyze ALL the data provided — every single row. When the user asks for a chart, use the render_chart tool.",
     "For tabular answers, use markdown tables.",
     "",
     ...parts,
