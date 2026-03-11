@@ -28,7 +28,7 @@ export function ChatInterface() {
         <div className="flex flex-1 items-center justify-center text-gray-400">
           <div className="text-center">
             <img
-              src="/zona-sul-logo.svg"
+              src="/zona-sul-logo.png"
               alt="Zona Sul"
               className="mx-auto mb-4 h-12"
             />

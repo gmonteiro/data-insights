@@ -17,7 +17,7 @@ export function FileSidebar() {
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-gray-50 p-3">
-      <img src="/zona-sul-logo.svg" alt="Zona Sul" className="mb-2 h-8" />
+      <img src="/zona-sul-logo.png" alt="Zona Sul" className="mb-2 h-8" />
       <h2 className="mb-2 text-sm font-semibold text-gray-700">Files</h2>
       <UploadModal />
       <Separator className="my-3" />
