@@ -118,8 +118,16 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: Partial<Pick<RechartsPrimitive.TooltipProps<string, string>, "active" | "payload" | "label" | "labelFormatter" | "formatter">> &
-  React.ComponentProps<"div"> & {
+}: {
+    active?: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload?: any[]
+    label?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    labelFormatter?: (label: any, payload: any[]) => React.ReactNode
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    formatter?: (value: any, name: any, item: any, index: number, payload: any) => React.ReactNode
+    className?: string
     hideLabel?: boolean
     hideIndicator?: boolean
     indicator?: "line" | "dot" | "dashed"
@@ -260,9 +268,12 @@ function ChartLegendContent({
   payload,
   verticalAlign = "bottom",
   nameKey,
-}: React.ComponentProps<"div"> &
-  Partial<Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign">> & {
+}: {
+    className?: string
     hideIcon?: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload?: any[]
+    verticalAlign?: "top" | "bottom" | "middle"
     nameKey?: string
   }) {
   const { config } = useChart()
