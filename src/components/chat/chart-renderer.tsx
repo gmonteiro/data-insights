@@ -43,6 +43,8 @@ function getColor(
 export function ChartRenderer({ data }: { data: ChartData }) {
   const { rows, xAxisKey, yAxisKeys, chartType, title, seriesColors } = data;
 
+  if (!rows?.length || !yAxisKeys?.length || !xAxisKey) return null;
+
   return (
     <div className="my-4 rounded-lg border bg-white p-4">
       {title && (

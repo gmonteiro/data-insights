@@ -20,17 +20,17 @@ export function MessageList({ messages }: { messages: UIMessage[] }) {
 
 function MessageBubble({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
+  const parts = message.parts ?? [];
 
   // Concatenate consecutive text parts
-  const textContent = (message.parts ?? [])
-    .filter((p): p is Extract<typeof p, { type: "text" }> => p.type === "text")
-    .map((p) => p.text)
+  const textContent = parts
+    .filter((p) => p != null && p.type === "text" && "text" in p)
+    .map((p) => (p as { type: "text"; text: string }).text)
     .join("");
 
   // Find chart tool parts — in v6, tool parts have type "tool-<toolName>"
-  // and input/output directly on the part (no toolInvocation wrapper)
-  const chartParts = (message.parts ?? []).filter(
-    (p) => p.type === "tool-render_chart"
+  const chartParts = parts.filter(
+    (p) => p != null && typeof p.type === "string" && p.type.startsWith("tool-")
   );
 
   return (
@@ -42,8 +42,11 @@ function MessageBubble({ message }: { message: UIMessage }) {
       >
         {textContent && <Markdown content={textContent} />}
         {chartParts.map((part, i) => {
-          const args = (part as unknown as { input: ChartData }).input;
-          return args ? <ChartRenderer key={i} data={args} /> : null;
+          const input = (part as Record<string, unknown>).input as
+            | ChartData
+            | undefined;
+          if (!input?.rows || !input?.yAxisKeys) return null;
+          return <ChartRenderer key={i} data={input} />;
         })}
       </div>
     </div>
