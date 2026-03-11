@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -21,27 +22,47 @@ import {
 } from "recharts";
 import type { ChartData } from "@/types";
 
-const DEFAULT_COLORS = [
-  "#3b82f6",
-  "#ef4444",
-  "#22c55e",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ec4899",
-  "#14b8a6",
-  "#f97316",
-];
+function oklchToHex(oklch: string): string {
+  if (!oklch || typeof document === "undefined") return "#ED1C24";
+  const el = document.createElement("div");
+  el.style.color = oklch;
+  document.body.appendChild(el);
+  const computed = getComputedStyle(el).color;
+  document.body.removeChild(el);
+  const match = computed.match(/\d+/g);
+  if (!match || match.length < 3) return "#ED1C24";
+  return (
+    "#" +
+    match
+      .slice(0, 3)
+      .map((v) => parseInt(v).toString(16).padStart(2, "0"))
+      .join("")
+  );
+}
+
+function resolveChartColors(): string[] {
+  if (typeof window === "undefined") return ["#ED1C24", "#c41920", "#9b1419", "#7a1014", "#5c0c0f"];
+  const style = getComputedStyle(document.documentElement);
+  return [1, 2, 3, 4, 5].map((n) => {
+    const raw = style.getPropertyValue(`--chart-${n}`).trim();
+    if (!raw) return "#ED1C24";
+    if (raw.startsWith("#")) return raw;
+    return oklchToHex(raw);
+  });
+}
 
 function getColor(
+  colors: string[],
   key: string,
   index: number,
   seriesColors?: Record<string, string>
 ) {
-  return seriesColors?.[key] ?? DEFAULT_COLORS[index % DEFAULT_COLORS.length];
+  return seriesColors?.[key] ?? colors[index % colors.length];
 }
 
 export function ChartRenderer({ data }: { data: ChartData }) {
   const { rows, xAxisKey, yAxisKeys, chartType, title, seriesColors } = data;
+  const colors = useMemo(() => resolveChartColors(), []);
 
   if (!rows?.length || !yAxisKeys?.length || !xAxisKey) return null;
 
@@ -62,7 +83,7 @@ export function ChartRenderer({ data }: { data: ChartData }) {
               <Bar
                 key={key}
                 dataKey={key}
-                fill={getColor(key, i, seriesColors)}
+                fill={getColor(colors, key, i, seriesColors)}
               />
             ))}
           </BarChart>
@@ -78,7 +99,7 @@ export function ChartRenderer({ data }: { data: ChartData }) {
                 key={key}
                 type="monotone"
                 dataKey={key}
-                stroke={getColor(key, i, seriesColors)}
+                stroke={getColor(colors, key, i, seriesColors)}
               />
             ))}
           </LineChart>
@@ -94,8 +115,8 @@ export function ChartRenderer({ data }: { data: ChartData }) {
                 key={key}
                 type="monotone"
                 dataKey={key}
-                fill={getColor(key, i, seriesColors)}
-                stroke={getColor(key, i, seriesColors)}
+                fill={getColor(colors, key, i, seriesColors)}
+                stroke={getColor(colors, key, i, seriesColors)}
                 fillOpacity={0.3}
               />
             ))}
@@ -112,7 +133,7 @@ export function ChartRenderer({ data }: { data: ChartData }) {
             <Tooltip cursor={{ strokeDasharray: "3 3" }} />
             <Scatter
               data={rows}
-              fill={getColor(yAxisKeys[0], 0, seriesColors)}
+              fill={getColor(colors, yAxisKeys[0], 0, seriesColors)}
             />
           </ScatterChart>
         ) : (
@@ -130,7 +151,7 @@ export function ChartRenderer({ data }: { data: ChartData }) {
               {rows.map((_, i) => (
                 <Cell
                   key={i}
-                  fill={DEFAULT_COLORS[i % DEFAULT_COLORS.length]}
+                  fill={colors[i % colors.length]}
                 />
               ))}
             </Pie>
