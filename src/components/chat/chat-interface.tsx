@@ -36,7 +36,7 @@ export function ChatInterface() {
           </div>
         </div>
       ) : (
-        <MessageList messages={messages} />
+        <MessageList messages={messages} isLoading={isLoading} />
       )}
       {error && (
         <div className="mx-auto max-w-3xl px-4 py-2 text-sm text-red-600">

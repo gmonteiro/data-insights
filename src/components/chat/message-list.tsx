@@ -6,12 +6,22 @@ import { Markdown } from "./markdown";
 import { ChartRenderer } from "./chart-renderer";
 import type { ChartData } from "@/types";
 
-export function MessageList({ messages }: { messages: UIMessage[] }) {
+export function MessageList({
+  messages,
+  isLoading,
+}: {
+  messages: UIMessage[];
+  isLoading: boolean;
+}) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isLoading]);
+
+  // Check if last message is from user (model hasn't replied yet)
+  const lastMsg = messages[messages.length - 1];
+  const showThinking = isLoading && lastMsg?.role === "user";
 
   return (
     <div className="flex-1 overflow-y-auto p-4">
@@ -19,6 +29,15 @@ export function MessageList({ messages }: { messages: UIMessage[] }) {
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} />
         ))}
+        {showThinking && (
+          <div className="flex justify-start">
+            <div className="rounded-lg bg-gray-100 px-4 py-2 text-sm text-gray-500">
+              <span className="inline-flex items-center gap-1">
+                <span className="animate-pulse">●</span> Analisando seus dados...
+              </span>
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
     </div>
