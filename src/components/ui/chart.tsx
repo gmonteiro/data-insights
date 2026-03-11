@@ -118,7 +118,7 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: Pick<RechartsPrimitive.TooltipProps<string, string>, "active" | "payload" | "label" | "labelFormatter" | "formatter"> &
+}: Partial<Pick<RechartsPrimitive.TooltipProps<string, string>, "active" | "payload" | "label" | "labelFormatter" | "formatter">> &
   React.ComponentProps<"div"> & {
     hideLabel?: boolean
     hideIndicator?: boolean
@@ -261,7 +261,7 @@ function ChartLegendContent({
   verticalAlign = "bottom",
   nameKey,
 }: React.ComponentProps<"div"> &
-  Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+  Partial<Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign">> & {
     hideIcon?: boolean
     nameKey?: string
   }) {

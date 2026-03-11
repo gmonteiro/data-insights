@@ -63,7 +63,7 @@ export function ChartRenderer({ data }: { data: ChartData }) {
             <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
             <YAxis tickLine={false} axisLine={false} fontSize={12} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent payload={[]} />} />
+            <ChartLegend content={<ChartLegendContent />} />
             {yAxisKeys.map((key) => (
               <Bar key={key} dataKey={key} fill={`var(--color-${key})`} radius={4} />
             ))}
@@ -74,7 +74,7 @@ export function ChartRenderer({ data }: { data: ChartData }) {
             <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
             <YAxis tickLine={false} axisLine={false} fontSize={12} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent payload={[]} />} />
+            <ChartLegend content={<ChartLegendContent />} />
             {yAxisKeys.map((key) => (
               <Line key={key} type="monotone" dataKey={key} stroke={`var(--color-${key})`} strokeWidth={2} dot={false} />
             ))}
@@ -85,7 +85,7 @@ export function ChartRenderer({ data }: { data: ChartData }) {
             <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
             <YAxis tickLine={false} axisLine={false} fontSize={12} />
             <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent payload={[]} />} />
+            <ChartLegend content={<ChartLegendContent />} />
             {yAxisKeys.map((key) => (
               <Area key={key} type="monotone" dataKey={key} fill={`var(--color-${key})`} stroke={`var(--color-${key})`} fillOpacity={0.3} />
             ))}
@@ -101,7 +101,7 @@ export function ChartRenderer({ data }: { data: ChartData }) {
         ) : (
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent />} />
-            <ChartLegend content={<ChartLegendContent payload={[]} />} />
+            <ChartLegend content={<ChartLegendContent />} />
             <Pie data={rows} dataKey={yAxisKeys[0]} nameKey={xAxisKey} cx="50%" cy="50%" outerRadius={120}>
               {rows.map((_, i) => (
                 <Cell key={i} fill={CHART_COLOR_VARS[i % CHART_COLOR_VARS.length]} />
