@@ -2,162 +2,114 @@
 
 import { useMemo } from "react";
 import {
-  BarChart,
   Bar,
-  LineChart,
+  BarChart,
   Line,
-  PieChart,
+  LineChart,
   Pie,
-  AreaChart,
+  PieChart,
   Area,
-  ScatterChart,
+  AreaChart,
   Scatter,
+  ScatterChart,
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
   Cell,
 } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 import type { ChartData } from "@/types";
 
-function oklchToHex(oklch: string): string {
-  if (!oklch || typeof document === "undefined") return "#ED1C24";
-  const el = document.createElement("div");
-  el.style.color = oklch;
-  document.body.appendChild(el);
-  const computed = getComputedStyle(el).color;
-  document.body.removeChild(el);
-  const match = computed.match(/\d+/g);
-  if (!match || match.length < 3) return "#ED1C24";
-  return (
-    "#" +
-    match
-      .slice(0, 3)
-      .map((v) => parseInt(v).toString(16).padStart(2, "0"))
-      .join("")
-  );
-}
-
-function resolveChartColors(): string[] {
-  if (typeof window === "undefined") return ["#ED1C24", "#c41920", "#9b1419", "#7a1014", "#5c0c0f"];
-  const style = getComputedStyle(document.documentElement);
-  return [1, 2, 3, 4, 5].map((n) => {
-    const raw = style.getPropertyValue(`--chart-${n}`).trim();
-    if (!raw) return "#ED1C24";
-    if (raw.startsWith("#")) return raw;
-    return oklchToHex(raw);
-  });
-}
-
-function getColor(
-  colors: string[],
-  key: string,
-  index: number,
-  seriesColors?: Record<string, string>
-) {
-  return seriesColors?.[key] ?? colors[index % colors.length];
-}
+const CHART_COLOR_VARS = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
+];
 
 export function ChartRenderer({ data }: { data: ChartData }) {
-  const { rows, xAxisKey, yAxisKeys, chartType, title, seriesColors } = data;
-  const colors = useMemo(() => resolveChartColors(), []);
+  const { rows, xAxisKey, yAxisKeys, chartType, title } = data;
+
+  const chartConfig = useMemo<ChartConfig>(() => {
+    const config: ChartConfig = {};
+    yAxisKeys.forEach((key, i) => {
+      config[key] = {
+        label: key,
+        color: CHART_COLOR_VARS[i % CHART_COLOR_VARS.length],
+      };
+    });
+    return config;
+  }, [yAxisKeys]);
 
   if (!rows?.length || !yAxisKeys?.length || !xAxisKey) return null;
 
   return (
-    <div className="my-4 rounded-lg border bg-white p-4">
+    <div className="my-4 rounded-lg border bg-card p-4">
       {title && (
-        <h3 className="mb-2 text-center text-sm font-semibold">{title}</h3>
+        <h3 className="mb-4 text-center text-sm font-semibold">{title}</h3>
       )}
-      <ResponsiveContainer width="100%" height={350}>
+      <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
         {chartType === "bar" ? (
           <BarChart data={rows}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={xAxisKey} fontSize={12} />
-            <YAxis fontSize={12} />
-            <Tooltip />
-            <Legend />
-            {yAxisKeys.map((key, i) => (
-              <Bar
-                key={key}
-                dataKey={key}
-                fill={getColor(colors, key, i, seriesColors)}
-              />
+            <CartesianGrid vertical={false} />
+            <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+            <YAxis tickLine={false} axisLine={false} fontSize={12} />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <ChartLegend content={<ChartLegendContent />} />
+            {yAxisKeys.map((key) => (
+              <Bar key={key} dataKey={key} fill={`var(--color-${key})`} radius={4} />
             ))}
           </BarChart>
         ) : chartType === "line" ? (
           <LineChart data={rows}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={xAxisKey} fontSize={12} />
-            <YAxis fontSize={12} />
-            <Tooltip />
-            <Legend />
-            {yAxisKeys.map((key, i) => (
-              <Line
-                key={key}
-                type="monotone"
-                dataKey={key}
-                stroke={getColor(colors, key, i, seriesColors)}
-              />
+            <CartesianGrid vertical={false} />
+            <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+            <YAxis tickLine={false} axisLine={false} fontSize={12} />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <ChartLegend content={<ChartLegendContent />} />
+            {yAxisKeys.map((key) => (
+              <Line key={key} type="monotone" dataKey={key} stroke={`var(--color-${key})`} strokeWidth={2} dot={false} />
             ))}
           </LineChart>
         ) : chartType === "area" ? (
           <AreaChart data={rows}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={xAxisKey} fontSize={12} />
-            <YAxis fontSize={12} />
-            <Tooltip />
-            <Legend />
-            {yAxisKeys.map((key, i) => (
-              <Area
-                key={key}
-                type="monotone"
-                dataKey={key}
-                fill={getColor(colors, key, i, seriesColors)}
-                stroke={getColor(colors, key, i, seriesColors)}
-                fillOpacity={0.3}
-              />
+            <CartesianGrid vertical={false} />
+            <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+            <YAxis tickLine={false} axisLine={false} fontSize={12} />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <ChartLegend content={<ChartLegendContent />} />
+            {yAxisKeys.map((key) => (
+              <Area key={key} type="monotone" dataKey={key} fill={`var(--color-${key})`} stroke={`var(--color-${key})`} fillOpacity={0.3} />
             ))}
           </AreaChart>
         ) : chartType === "scatter" ? (
           <ScatterChart>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={xAxisKey} fontSize={12} name={xAxisKey} />
-            <YAxis
-              dataKey={yAxisKeys[0]}
-              fontSize={12}
-              name={yAxisKeys[0]}
-            />
-            <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-            <Scatter
-              data={rows}
-              fill={getColor(colors, yAxisKeys[0], 0, seriesColors)}
-            />
+            <CartesianGrid vertical={false} />
+            <XAxis dataKey={xAxisKey} tickLine={false} axisLine={false} fontSize={12} name={xAxisKey} />
+            <YAxis dataKey={yAxisKeys[0]} tickLine={false} axisLine={false} fontSize={12} name={yAxisKeys[0]} />
+            <ChartTooltip content={<ChartTooltipContent />} cursor={{ strokeDasharray: "3 3" }} />
+            <Scatter data={rows} fill={`var(--color-${yAxisKeys[0]})`} />
           </ScatterChart>
         ) : (
           <PieChart>
-            <Tooltip />
-            <Legend />
-            <Pie
-              data={rows}
-              dataKey={yAxisKeys[0]}
-              nameKey={xAxisKey}
-              cx="50%"
-              cy="50%"
-              outerRadius={120}
-            >
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <ChartLegend content={<ChartLegendContent />} />
+            <Pie data={rows} dataKey={yAxisKeys[0]} nameKey={xAxisKey} cx="50%" cy="50%" outerRadius={120}>
               {rows.map((_, i) => (
-                <Cell
-                  key={i}
-                  fill={colors[i % colors.length]}
-                />
+                <Cell key={i} fill={CHART_COLOR_VARS[i % CHART_COLOR_VARS.length]} />
               ))}
             </Pie>
           </PieChart>
         )}
-      </ResponsiveContainer>
+      </ChartContainer>
     </div>
   );
 }
